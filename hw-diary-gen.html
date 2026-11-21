@@ -1192,10 +1192,6 @@
           reader.readAsDataURL(file);
         });
 
-        // Reset logo to default campus crest
-        els.btnResetLogo.addEventListener("click", () => {
-          state.customLogoImg = null;
-          els.logoUploadInput.value = "";
         // Reset logo to default root logo.jpeg
         els.btnResetLogo.addEventListener("click", () => {
           els.logoUploadInput.value = "";
@@ -1209,7 +1205,7 @@
           renderDiaryCanvas({ highlightEmptyWarning: !hasFilled });
           els.diaryCanvas.scrollIntoView({ behavior: "smooth", block: "nearest" });
           if (hasFilled) {
-            showToast("Diary image created! Click 'Download PNG Image' to save.", "success");
+            showToast("Diary image created! Click 'Download PNG' to save.", "success");
           } else {
             showToast("Write diary text in at least one subject field first.", "warn");
           }
@@ -1222,6 +1218,64 @@
         // Sample & Clear buttons
         els.btnLoadSample.addEventListener("click", loadSampleDiary);
         els.btnClearAll.addEventListener("click", clearAllEntries);
+      }
+
+      /**
+       * Downloads the generated diary canvas as a crisp PNG file.
+       */
+      function downloadDiaryImage() {
+        const hasFilled = state.subjects.some((s) => s.diary.trim().length > 0);
+        if (!hasFilled) {
+          renderDiaryCanvas({ highlightEmptyWarning: true });
+          showToast("Please enter at least one subject diary before downloading.", "warn");
+          return;
+        }
+
+        renderDiaryCanvas();
+        try {
+          const dataUrl = els.diaryCanvas.toDataURL("image/png");
+          const safeClass = getActiveClassName().replace(/[^a-zA-Z0-9_-]+/g, "_");
+          const safeDate = state.date || getTodayISO();
+          const link = document.createElement("a");
+          link.download = `Diary_${safeClass}_${safeDate}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast("Diary PNG downloaded!", "success");
+        } catch (err) {
+          showToast("Unable to export image. Check if logo.jpeg is from another domain.", "warn");
+        }
+      }
+
+      /**
+       * Populates sample diary entries for quick testing.
+       */
+      function loadSampleDiary() {
+        state.subjects.forEach((subj) => {
+          if (SAMPLE_DIARIES[subj.name]) {
+            subj.diary = SAMPLE_DIARIES[subj.name];
+          }
+        });
+        state.generalNote = "Monthly test starts Monday. Bring complete practical notebooks.";
+        els.generalNote.value = state.generalNote;
+        renderSubjectInputs();
+        renderDiaryCanvas();
+        showToast("Sample diary loaded.", "info");
+      }
+
+      /**
+       * Clears all subject entries and general notice.
+       */
+      function clearAllEntries() {
+        state.subjects.forEach((subj) => {
+          subj.diary = "";
+        });
+        state.generalNote = "";
+        els.generalNote.value = "";
+        renderSubjectInputs();
+        renderDiaryCanvas();
+        showToast("All entries cleared.", "info");
       }
 
       if (document.readyState === "loading") {
