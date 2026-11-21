@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Diary Image Maker — Superior Allama Iqbal Science College Gojra</title>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Google Font: Outfit & Plus Jakarta Sans for clean, modern academic polish -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['"Outfit"', '"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brandRed: '#D9232E',
+            brandBlue: '#0EA5E9',
+            brandNavy: '#0F172A',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Smooth custom scrollbar for subject list on large screens */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Subtle dot pattern background for workspace */
+    .workspace-bg {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="workspace-bg min-h-screen text-slate-800 antialiased selection:bg-sky-100 selection:text-sky-900">
+  <!-- Toast / Status Banner Container (replaces alert/confirm) -->
+  <div
+    id="statusBanner"
+    role="status"
+    aria-live="polite"
+    class="fixed top-4 right-4 z-50 hidden max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-xl transition-all duration-300"
+  >
+    <div class="flex items-start gap-3">
+      <span id="statusIcon" class="mt-0.5 text-base"></span>
+      <p id="statusText" class="leading-snug"></p>
+    </div>
+  </div>
+
+  <!-- Top Application Header -->
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
+          <canvas id="miniLogoCanvas" width="32" height="32" class="rounded-full"></canvas>
+        </div>
+        <div>
+          <h1 class="font-display text-base font-bold tracking-tight text-slate-900 sm:text-lg">
+            Daily Diary Image Maker
+          </h1>
+          <p class="text-xs text-slate-500">
+            Create &amp; download class diary cards
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action Badges -->
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          id="btnLoadSample"
+          class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 active:scale-[0.99]"
+        >
+          Sample
+        </button>
+        <button
+          type="button"
+          id="btnClearAll"
+          class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 active:scale-[0.99]"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Responsive Two-Column Workspace -->
+  <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+      <!-- LEFT COLUMN: Diary Input Form (6 cols on lg) -->
+      <section
+        aria-label="Diary Entry Form"
+        class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-6"
+      >
+        <div class="mb-5 flex items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
+          <h2 class="font-display text-base font-bold text-slate-900">
+            Diary Details
+          </h2>
+          <span id="filledCountBadge" class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+            0 of 7 filled
+          </span>
+        </div>
+
+        <!-- Date & Class Section -->
+        <div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <!-- Present Date -->
+          <div>
+            <label for="diaryDate" class="mb-1.5 block text-xs font-semibold text-slate-600">
+              Date
+            </label>
+            <input
+              type="date"
+              id="diaryDate"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/5"
+            />
+          </div>
+
+          <!-- Selected Class -->
+          <div>
+            <label for="diaryClass" class="mb-1.5 block text-xs font-semibold text-slate-600">
+              Class / Section
+            </label>
+            <div class="flex gap-2">
+              <select
+                id="diaryClass"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/5"
+              >
+                <option value="9th Class (Science)">9th Class (Science)</option>
+                <option value="10th Class (Science)">10th Class (Science)</option>
+                <option value="1st Year (F.Sc Pre-Medical)">1st Year (F.Sc Pre-Medical)</option>
+                <option value="1st Year (F.Sc Pre-Engineering)">1st Year (F.Sc Pre-Engineering)</option>
+                <option value="1st Year (ICS)">1st Year (ICS)</option>
+                <option value="2nd Year (F.Sc Pre-Medical)">2nd Year (F.Sc Pre-Medical)</option>
+                <option value="2nd Year (F.Sc Pre-Engineering)">2nd Year (F.Sc Pre-Engineering)</option>
+                <option value="2nd Year (ICS)">2nd Year (ICS)</option>
+                <option value="8th Class">8th Class</option>
+                <option value="CUSTOM">Custom Class...</option>
+              </select>
+            </div>
+            <input
+              type="text"
+              id="customClassInput"
+              placeholder="Enter custom class (e.g. 10th Blue - Boys)"
+              class="mt-2 hidden w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/5"
+            />
+          </div>
+        </div>
+
+        <!-- Campus Logo Option (Defaults to logo.jpeg in root directory) -->
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2.5">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-white">
+              <canvas id="logoPreviewCanvas" width="80" height="80" class="h-full w-full object-cover"></canvas>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-800">Campus Logo</p>
+              <p id="logoSourceLabel" class="text-[11px] text-slate-500">
+                logo.jpeg
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <label
+              for="logoUploadInput"
+              class="cursor-pointer rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Change
+            </label>
+            <input type="file" id="logoUploadInput" accept="image/*" class="hidden" />
+            <button
+              type="button"
+              id="btnResetLogo"
+              class="rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject-Wise Diary Fields -->
+        <div class="mb-5">
+          <div class="mb-2.5 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-600">
+              Subjects
+            </h3>
+            <button
+              type="button"
+              id="btnAddSubject"
+              class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              + Add Subject
+            </button>
+          </div>
+
+          <div id="subjectsContainer" class="space-y-3">
+            <!-- Dynamically populated subject input cards -->
+          </div>
+        </div>
+
+        <!-- Optional Note / Remarks Field -->
+        <div class="mb-5">
+          <label for="generalNote" class="mb-1.5 block text-xs font-semibold text-slate-600">
+            Notice (Optional)
+          </label>
+          <input
+            type="text"
+            id="generalNote"
+            placeholder="e.g. Monthly test starts Monday."
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/5"
+          />
+        </div>
+
+        <!-- Primary Create & Download Action Buttons -->
+        <div class="flex flex-col gap-2.5 sm:flex-row">
+          <button
+            type="button"
+            id="btnCreateDiary"
+            class="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 active:scale-[0.99]"
+          >
+            <span>Create Image</span>
+          </button>
+
+          <button
+            type="button"
+            id="btnDownloadDiary"
+            class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 active:scale-[0.99]"
+          >
+            <span>Download PNG</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Live / Generated Diary Image Preview (6 cols on lg for landscape preview) -->
+      <section
+        aria-label="Generated Diary Preview"
+        class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:sticky lg:top-6 lg:col-span-6"
+      >
+        <div class="mb-3.5 flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <h2 class="font-display text-base font-bold text-slate-900">
+            Preview
+          </h2>
+          <button
+            type="button"
+            id="btnDownloadSecondary"
+            class="text-xs font-semibold text-slate-600 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900"
+          >
+            Save PNG
+          </button>
+        </div>
+
+        <!-- Canvas Frame -->
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-2">
+          <canvas
+            id="diaryCanvas"
+            class="h-auto w-full rounded-lg bg-white"
+          ></canvas>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    /**
+     * =========================================================================
+     * DAILY DIARY IMAGE MAKER — APPLICATION LOGIC & HIGH-DPI CANVAS RENDERER
+     * =========================================================================
+     * Architecture Overview:
+     * 1. State Management: Holds date, selected class, custom class string,
+     *    campus logo image (default high-res programmatic emblem matching
+     *    Superior Allama Iqbal Science College Gojra, or user-uploaded image),
+     *    optional notice, and array of subject entries.
+     * 2. UI Builders: Dynamically renders subject rows, updates filled counters,
+     *    and handles custom class toggles, logo uploads, sample presets, and clearing.
+     * 3. Canvas Layout & Typography Engine: Measures wrapped text lines accurately
+     *    before drawing so each subject card sizes dynamically with generous padding,
+     *    crisp typography, brand accents (#D9232E red & #0EA5E9 sky blue), campus
+     *    emblem, present date, and selected class.
+     * 4. PNG Export & Feedback: Exports a crisp PNG file to the user's device and
+     *    displays non-blocking toast messages.
+     */
+
+    (function () {
+      "use strict";
+
+      // Default subjects tailored for science / school / college daily diary
+      const DEFAULT_SUBJECTS = [
+        { id: "subj-1", name: "Physics", color: "#0284c7", badgeBg: "#e0f2fe", diary: "" },
+        { id: "subj-2", name: "Chemistry", color: "#dc2626", badgeBg: "#fee2e2", diary: "" },
+        { id: "subj-3", name: "Mathematics", color: "#4f46e5", badgeBg: "#e0e7ff", diary: "" },
+        { id: "subj-4", name: "Biology / Computer", color: "#059669", badgeBg: "#d1fae5", diary: "" },
+        { id: "subj-5", name: "English", color: "#d97706", badgeBg: "#fef3c7", diary: "" },
+        { id: "subj-6", name: "Urdu", color: "#7c3aed", badgeBg: "#ede9fe", diary: "" },
+        { id: "subj-7", name: "Islamiat / Pak. Studies", color: "#0d9488", badgeBg: "#ccfbf1", diary: "" },
+      ];
+
+      const SAMPLE_DIARIES = {
+        Physics: "Chapter 5: Gravitation — Revise Newton's Law of Universal Gravitation and solve numerical problems 5.1 to 5.4 in notebooks.",
+        Chemistry: "Chemical Equilibrium: Learn Law of Mass Action with examples; prepare short questions on reversible reactions for tomorrow's oral test.",
+        Mathematics: "Exercise 4.2: Complete questions 1 to 8 (all parts) on algebraic fractions and quadratic equations.",
+        "Biology / Computer": "Cell Cycle & Mitosis: Draw neat labeled diagrams of Prophase and Metaphase; memorize key stages.",
+        English: "Unit 7 (Sultan Ahmad Mosque): Read paragraphs 1–4, underline difficult words, and write meanings + sentences.",
+        Urdu: "سبق کا خلاصہ اور تشریح یاد کریں، صفحہ نمبر 68 کی املا کے الفاظ لکھ کر لائیں۔",
+        "Islamiat / Pak. Studies": "Topic: Ideology of Pakistan — Revise key points by Quaid-e-Azam and Allama Iqbal; learn 5 MCQs.",
+      };
+
+      const ACCENT_PALETTE = [
+        { color: "#0284c7", badgeBg: "#e0f2fe" },
+        { color: "#dc2626", badgeBg: "#fee2e2" },
+        { color: "#4f46e5", badgeBg: "#e0e7ff" },
+        { color: "#059669", badgeBg: "#d1fae5" },
+        { color: "#d97706", badgeBg: "#fef3c7" },
+        { color: "#7c3aed", badgeBg: "#ede9fe" },
+        { color: "#0d9488", badgeBg: "#ccfbf1" },
+        { color: "#be185d", badgeBg: "#fce7f3" },
+      ];
+
+      // Application State
+      const state = {
+        date: getTodayISO(),
+        classSelection: "9th Class (Science)",
+        customClass: "",
+        generalNote: "",
+        subjects: DEFAULT_SUBJECTS.map((s) => ({ ...s })),
+        customLogoImg: null,
+        logoLabel: "logo.jpeg",
+      };
+
+      // DOM References
+      const els = {
+        diaryDate: document.getElementById("diaryDate"),
+        diaryClass: document.getElementById("diaryClass"),
+        customClassInput: document.getElementById("customClassInput"),
+        generalNote: document.getElementById("generalNote"),
+        subjectsContainer: document.getElementById("subjectsContainer"),
+        filledCountBadge: document.getElementById("filledCountBadge"),
+        btnAddSubject: document.getElementById("btnAddSubject"),
+        btnCreateDiary: document.getElementById("btnCreateDiary"),
+        btnDownloadDiary: document.getElementById("btnDownloadDiary"),
+        btnDownloadSecondary: document.getElementById("btnDownloadSecondary"),
+        btnLoadSample: document.getElementById("btnLoadSample"),
+        btnClearAll: document.getElementById("btnClearAll"),
+        logoUploadInput: document.getElementById("logoUploadInput"),
+        btnResetLogo: document.getElementById("btnResetLogo"),
+        logoSourceLabel: document.getElementById("logoSourceLabel"),
+        logoPreviewCanvas: document.getElementById("logoPreviewCanvas"),
+        miniLogoCanvas: document.getElementById("miniLogoCanvas"),
+        diaryCanvas: document.getElementById("diaryCanvas"),
+        statusBanner: document.getElementById("statusBanner"),
+        statusIcon: document.getElementById("statusIcon"),
+        statusText: document.getElementById("statusText"),
+      };
+
+      let bannerTimer = null;
+
+      /**
+       * Returns today's local date formatted as YYYY-MM-DD for <input type="date">.
+       */
+      function getTodayISO() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      /**
+       * Formats an ISO date string (YYYY-MM-DD) into a clean readable date string.
+       */
+      function formatDisplayDate(isoDate) {
+        if (!isoDate) return "Date Not Set";
+        const parts = isoDate.split("-");
+        if (parts.length !== 3) return isoDate;
+        const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (Number.isNaN(dateObj.getTime())) return isoDate;
+        return dateObj.toLocaleDateString("en-US", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+
+      /**
+       * Resolves the active class name from dropdown or custom class input.
+       */
+      function getActiveClassName() {
+        if (state.classSelection === "CUSTOM") {
+          return state.customClass.trim() || "Custom Class";
+        }
+        return state.classSelection;
+      }
+
+      /**
+       * Displays a non-blocking toast notification banner.
+       */
+      function showToast(message, type = "info") {
+        if (bannerTimer) clearTimeout(bannerTimer);
+        els.statusText.textContent = message;
+
+        els.statusBanner.className =
+          "fixed top-4 right-4 z-50 max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-xl transition-all duration-300";
+
+        if (type === "success") {
+          els.statusBanner.classList.add("border-emerald-200", "bg-emerald-50", "text-emerald-900");
+          els.statusIcon.textContent = "✓";
+        } else if (type === "warn") {
+          els.statusBanner.classList.add("border-amber-200", "bg-amber-50", "text-amber-900");
+          els.statusIcon.textContent = "!";
+        } else {
+          els.statusBanner.classList.add("border-sky-200", "bg-sky-50", "text-sky-900");
+          els.statusIcon.textContent = "ℹ";
+        }
+
+        els.statusBanner.classList.remove("hidden");
+        bannerTimer = setTimeout(() => {
+          els.statusBanner.classList.add("hidden");
+        }, 3400);
+      }
+
+      /**
+       * Draws a rounded rectangle path without immediately filling or stroking.
+       */
+      function roundRectPath(ctx, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + w, y, x + w, y + h, radius);
+        ctx.arcTo(x + w, y + h, x, y + h, radius);
+        ctx.arcTo(x, y + h, x, y, radius);
+        ctx.arcTo(x, y, x + w, y, radius);
+        ctx.closePath();
+      }
+
+      /**
+       * Wraps multi-paragraph text into lines fitting within maxWidth.
+       */
+      function wrapTextLines(ctx, text, maxWidth) {
+        if (!text) return [];
+        const paragraphs = text.split(/\r?\n/);
+        const allLines = [];
+
+        paragraphs.forEach((para) => {
+          const words = para.trim().split(/\s+/);
+          if (!words[0]) {
+            allLines.push("");
+            return;
+          }
+          let currentLine = words[0];
+          for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const testLine = `${currentLine} ${word}`;
+            if (ctx.measureText(testLine).width <= maxWidth) {
+              currentLine = testLine;
+            } else {
+              allLines.push(currentLine);
+              currentLine = word;
+            }
+          }
+          allLines.push(currentLine);
+        });
+
+        return allLines;
+      }
+
+      /**
+       * Draws either the user's uploaded campus logo or the high-resolution
+       * Superior Allama Iqbal Science College Gojra circular crest.
+       */
+      function drawCampusLogo(ctx, size, customImg) {
+        ctx.clearRect(0, 0, size, size);
+        const cx = size / 2;
+        const cy = size / 2;
+        const r = size / 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r - 1, 0, Math.PI * 2);
+        ctx.clip();
+
+        if (customImg) {
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, size, size);
+          const scale = Math.max(size / customImg.width, size / customImg.height);
+          const drawW = customImg.width * scale;
+          const drawH = customImg.height * scale;
+          ctx.drawImage(customImg, (size - drawW) / 2, (size - drawH) / 2, drawW, drawH);
+          ctx.restore();
+          return;
+        }
+
+        // Outer Sky-Blue Ring
+        ctx.fillStyle = "#0EA5E9";
+        ctx.fillRect(0, 0, size, size);
+
+        // White Separator Ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.87, 0, Math.PI * 2);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fill();
+
+        // Inner Crimson-Red Medallion
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2);
+        ctx.fillStyle = "#DC2626";
+        ctx.fill();
+
+        // Globe Latitude/Longitude Lines
+        const globeR = r * 0.34;
+        const globeY = cy - r * 0.06;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.lineWidth = Math.max(1.2, size * 0.01);
+        ctx.beginPath();
+        ctx.arc(cx, globeY, globeR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(cx, globeY, globeR * 0.52, globeR, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(cx - globeR, globeY);
+        ctx.lineTo(cx + globeR, globeY);
+        ctx.moveTo(cx, globeY - globeR);
+        ctx.lineTo(cx, globeY + globeR);
+        ctx.stroke();
+
+        // Stylized Soaring Shaheen / Eagle Silhouette
+        ctx.save();
+        ctx.translate(cx, globeY);
+        ctx.rotate(-0.22);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(-globeR * 1.15, 0);
+        ctx.quadraticCurveTo(-globeR * 0.4, -globeR * 0.48, 0, -globeR * 0.14);
+        ctx.quadraticCurveTo(globeR * 0.45, -globeR * 0.55, globeR * 1.15, -globeR * 0.08);
+        ctx.quadraticCurveTo(globeR * 0.45, globeR * 0.15, 0, globeR * 0.12);
+        ctx.quadraticCurveTo(-globeR * 0.45, globeR * 0.18, -globeR * 1.15, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#92400E";
+        ctx.beginPath();
+        ctx.moveTo(-globeR * 1.0, 0);
+        ctx.quadraticCurveTo(-globeR * 0.35, -globeR * 0.36, 0, -globeR * 0.09);
+        ctx.quadraticCurveTo(globeR * 0.4, -globeR * 0.42, globeR * 1.0, -globeR * 0.05);
+        ctx.quadraticCurveTo(globeR * 0.38, globeR * 0.08, 0, globeR * 0.07);
+        ctx.quadraticCurveTo(-globeR * 0.38, globeR * 0.1, -globeR * 1.0, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Supporting Hands Arc at Base of Globe
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = Math.max(1.8, size * 0.022);
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.arc(cx, globeY + r * 0.04, globeR * 1.18, 0.25 * Math.PI, 0.75 * Math.PI);
+        ctx.stroke();
+
+        // Circular Arched College Name
+        const arcText = "SUPERIOR ALLAMA IQBAL SCIENCE COLLEGE GOJRA";
+        const textRadius = r * 0.67;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = `800 ${Math.max(6, Math.round(size * 0.068))}px "Plus Jakarta Sans", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        const totalAngle = Math.PI * 1.32;
+        const startAngle = -Math.PI / 2 - totalAngle / 2;
+        const stepAngle = totalAngle / (arcText.length - 1);
+
+        for (let i = 0; i < arcText.length; i++) {
+          const angle = startAngle + i * stepAngle;
+          ctx.save();
+          ctx.translate(cx + Math.cos(angle) * textRadius, cy + Math.sin(angle) * textRadius);
+          ctx.rotate(angle + Math.PI / 2);
+          ctx.fillText(arcText[i], 0, 0);
+          ctx.restore();
+        }
+
+        // Motto Text at Bottom
+        ctx.font = `800 ${Math.max(5, Math.round(size * 0.058))}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillText("EDUCATION WITH", cx, cy + r * 0.46);
+        ctx.fillText("EXCELLENCE", cx, cy + r * 0.6);
+
+        ctx.restore();
+      }
+
+      /**
+       * Updates the mini header logo and form preview logo canvases.
+       */
+      function refreshLogoCanvases() {
+        if (els.miniLogoCanvas) {
+          drawCampusLogo(els.miniLogoCanvas.getContext("2d"), els.miniLogoCanvas.width, state.customLogoImg);
+        }
+        if (els.logoPreviewCanvas) {
+          drawCampusLogo(els.logoPreviewCanvas.getContext("2d"), els.logoPreviewCanvas.width, state.customLogoImg);
+        }
+      }
+
+      /**
+       * Updates the badge showing how many subject diary fields are filled.
+       */
+      function updateFilledBadge() {
+        const filled = state.subjects.filter((s) => s.diary.trim().length > 0).length;
+        els.filledCountBadge.textContent = `${filled} of ${state.subjects.length} filled`;
+      }
+
+      /**
+       * Renders the interactive subject cards inside the form column.
+       */
+      function renderSubjectInputs() {
+        els.subjectsContainer.innerHTML = "";
+
+        state.subjects.forEach((subj, index) => {
+          const card = document.createElement("div");
+          card.className =
+            "rounded-xl border border-slate-200 bg-slate-50/40 p-3 transition focus-within:border-slate-400 focus-within:bg-white";
+
+          const topRow = document.createElement("div");
+          topRow.className = "mb-1.5 flex items-center justify-between gap-2";
+
+          const leftGroup = document.createElement("div");
+          leftGroup.className = "flex flex-1 items-center gap-2";
+
+          const colorDot = document.createElement("span");
+          colorDot.className = "h-2.5 w-2.5 shrink-0 rounded-full";
+          colorDot.style.backgroundColor = subj.color;
+
+          const nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.value = subj.name;
+          nameInput.ariaLabel = `Subject ${index + 1} name`;
+          nameInput.placeholder = "Subject Name";
+          nameInput.className =
+            "w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-sm font-semibold text-slate-800 transition hover:border-slate-200 focus:border-slate-300 focus:bg-white focus:outline-none";
+          nameInput.addEventListener("input", (e) => {
+            subj.name = e.target.value;
+            renderDiaryCanvas();
+          });
+
+          leftGroup.appendChild(colorDot);
+          leftGroup.appendChild(nameInput);
+          topRow.appendChild(leftGroup);
+
+          if (state.subjects.length > 1) {
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.title = "Remove subject";
+            removeBtn.className =
+              "rounded-md px-1.5 py-0.5 text-xs text-slate-400 transition hover:bg-slate-100 hover:text-slate-700";
+            removeBtn.textContent = "Remove";
+            removeBtn.addEventListener("click", () => {
+              state.subjects.splice(index, 1);
+              renderSubjectInputs();
+              renderDiaryCanvas();
+            });
+            topRow.appendChild(removeBtn);
+          }
+
+          const textarea = document.createElement("textarea");
+          textarea.rows = 2;
+          textarea.value = subj.diary;
+          textarea.placeholder = `Write ${subj.name || "subject"} diary...`;
+          textarea.className =
+            "w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 placeholder:text-slate-400 transition focus:border-slate-400 focus:outline-none";
+          textarea.addEventListener("input", (e) => {
+            subj.diary = e.target.value;
+            updateFilledBadge();
+            renderDiaryCanvas();
+          });
+
+          card.appendChild(topRow);
+          card.appendChild(textarea);
+          els.subjectsContainer.appendChild(card);
+        });
+
+        updateFilledBadge();
+      }
+
+      /**
+       * Renders the full, high-resolution Landscape Diary Image onto #diaryCanvas.
+       * Uses a wide 1440px landscape canvas with a crisp 2-column subject grid,
+       * excludes any subject left empty, and omits any generator watermark.
+       */
+      function renderDiaryCanvas(options = {}) {
+        const { highlightEmptyWarning = false } = options;
+        const canvas = els.diaryCanvas;
+        const ctx = canvas.getContext("2d");
+
+        const width = 1440;
+        const outerMargin = 38;
+        const cardPadX = 40;
+        const contentWidth = width - outerMargin * 2;
+        const innerWidth = contentWidth - cardPadX * 2;
+
+        // Only include subjects that have non-empty diary text
+        const populatedSubjects = state.subjects.filter((s) => s.diary.trim().length > 0);
+        const hasEntries = populatedSubjects.length > 0;
+
+        // Measure total height first using a 2-column landscape grid for subjects
+        const measureCtx = document.createElement("canvas").getContext("2d");
+        measureCtx.font = '500 21px "Plus Jakarta Sans", sans-serif';
+
+        const colGap = 20;
+        const rowGap = 16;
+        const rowPadY = 18;
+        const lineHeight = 29;
+        const badgeColW = 178;
+        const cardColW = (innerWidth - colGap) / 2;
+
+        const measuredItems = populatedSubjects.map((item) => {
+          const textMaxW = cardColW - badgeColW - 52;
+          const lines = wrapTextLines(measureCtx, item.diary.trim(), textMaxW);
+          const safeLines = lines.length > 0 ? lines : [""];
+          const rowHeight = Math.max(76, rowPadY * 2 + safeLines.length * lineHeight);
+          return {
+            ...item,
+            lines: safeLines,
+            rowHeight,
+          };
+        });
+
+        // Pair items into landscape rows of 2 columns (or full width if single item)
+        const gridRows = [];
+        if (measuredItems.length === 1) {
+          const single = measuredItems[0];
+          const fullTextMaxW = innerWidth - badgeColW - 56;
+          const fullLines = wrapTextLines(measureCtx, single.diary.trim(), fullTextMaxW);
+          const safeLines = fullLines.length > 0 ? fullLines : [""];
+          const rowHeight = Math.max(76, rowPadY * 2 + safeLines.length * lineHeight);
+          gridRows.push([{ ...single, lines: safeLines, rowHeight, isFullWidth: true }]);
+        } else {
+          for (let i = 0; i < measuredItems.length; i += 2) {
+            const leftItem = measuredItems[i];
+            const rightItem = measuredItems[i + 1] || null;
+            const unifiedHeight = rightItem
+              ? Math.max(leftItem.rowHeight, rightItem.rowHeight)
+              : leftItem.rowHeight;
+            gridRows.push([
+              { ...leftItem, rowHeight: unifiedHeight, isFullWidth: false },
+              rightItem ? { ...rightItem, rowHeight: unifiedHeight, isFullWidth: false } : null,
+            ]);
+          }
+        }
+
+        const subjectsBlockHeight = hasEntries
+          ? gridRows.reduce((sum, pair) => sum + pair[0].rowHeight, 0) +
+            Math.max(0, gridRows.length - 1) * rowGap
+          : 112;
+
+        const noteText = state.generalNote.trim();
+        measureCtx.font = '600 19px "Plus Jakarta Sans", sans-serif';
+        const noteLines = noteText ? wrapTextLines(measureCtx, noteText, innerWidth - 44) : [];
+        const noteBoxHeight = noteLines.length > 0 ? 36 + noteLines.length * 26 : 0;
+
+        // Compact landscape header + subjects grid + optional notice + clean bottom margin
+        const headerHeight = 166;
+        const sectionTitleHeight = 44;
+        const bottomPad = 34;
+        const totalHeight =
+          outerMargin * 2 +
+          headerHeight +
+          sectionTitleHeight +
+          subjectsBlockHeight +
+          (noteBoxHeight > 0 ? noteBoxHeight + 18 : 0) +
+          bottomPad;
+
+        canvas.width = width;
+        canvas.height = totalHeight;
+
+        // 1. Outer Background Gradient (Soft Sky-Mist to Warm Rose Tint)
+        const bgGrad = ctx.createLinearGradient(0, 0, width, totalHeight);
+        bgGrad.addColorStop(0, "#E0F2FE");
+        bgGrad.addColorStop(0.5, "#F8FAFC");
+        bgGrad.addColorStop(1, "#FEF2F2");
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, totalHeight);
+
+        // Decorative subtle corner accents
+        ctx.save();
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = "#0284C7";
+        ctx.beginPath();
+        ctx.arc(width - 60, 60, 220, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#DC2626";
+        ctx.beginPath();
+        ctx.arc(60, totalHeight - 50, 240, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 2. Main Elevated Diary Sheet Card
+        const sheetX = outerMargin;
+        const sheetY = outerMargin;
+        const sheetH = totalHeight - outerMargin * 2;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(15, 23, 42, 0.10)";
+        ctx.shadowBlur = 32;
+        ctx.shadowOffsetY = 12;
+        roundRectPath(ctx, sheetX, sheetY, contentWidth, sheetH, 28);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fill();
+        ctx.restore();
+
+        // Top dual-color academic accent strip inside sheet
+        ctx.save();
+        roundRectPath(ctx, sheetX, sheetY, contentWidth, 11, 28);
+        ctx.clip();
+        ctx.fillStyle = "#DC2626";
+        ctx.fillRect(sheetX, sheetY, contentWidth * 0.52, 11);
+        ctx.fillStyle = "#0EA5E9";
+        ctx.fillRect(sheetX + contentWidth * 0.52, sheetY, contentWidth * 0.48, 11);
+        ctx.restore();
+
+        // 3. Landscape Header: Campus Logo + College Title (Left) & Class/Date Pill Cards (Right)
+        let cursorY = sheetY + 28;
+        const logoSize = 114;
+        const logoX = sheetX + cardPadX;
+        const logoY = cursorY + 4;
+        const rightBoundX = sheetX + contentWidth - cardPadX;
+
+        // Subtle ring behind logo
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#F0F9FF";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#BAE6FD";
+        ctx.stroke();
+        ctx.restore();
+
+        const tempLogoCanvas = document.createElement("canvas");
+        tempLogoCanvas.width = 280;
+        tempLogoCanvas.height = 280;
+        drawCampusLogo(tempLogoCanvas.getContext("2d"), 280, state.customLogoImg);
+        ctx.drawImage(tempLogoCanvas, logoX, logoY, logoSize, logoSize);
+
+        const textStartX = logoX + logoSize + 22;
+
+        // Pill badge: DAILY STUDENT DIARY
+        const pillW = 194;
+        const pillH = 28;
+        roundRectPath(ctx, textStartX, cursorY + 2, pillW, pillH, 999);
+        ctx.fillStyle = "#FEF2F2";
+        ctx.fill();
+        ctx.strokeStyle = "#FECACA";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#DC2626";
+        ctx.font = '800 12px "Plus Jakarta Sans", sans-serif';
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("DAILY STUDENT DIARY", textStartX + 16, cursorY + 16);
+
+        // Campus Name in Outfit Display Font
+        ctx.fillStyle = "#0F172A";
+        ctx.font = '800 29px "Outfit", "Plus Jakarta Sans", sans-serif';
+        ctx.textBaseline = "top";
+        ctx.fillText("Superior Allama Iqbal Science College", textStartX, cursorY + 38);
+
+        // Campus Sub-location & Motto
+        ctx.fillStyle = "#475569";
+        ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText("Gojra Campus  •  Education With Excellence", textStartX, cursorY + 75);
+
+        // Right-aligned Class & Date Badges in Header for Landscape Balance
+        const activeClass = getActiveClassName();
+        const formattedDate = formatDisplayDate(state.date);
+
+        ctx.font = '800 20px "Outfit", "Plus Jakarta Sans", sans-serif';
+        const classValW = ctx.measureText(activeClass).width;
+        const dateValW = ctx.measureText(formattedDate).width;
+        const metaBoxW = Math.max(255, Math.min(340, Math.max(classValW, dateValW) + 105));
+        const metaBoxX = rightBoundX - metaBoxW;
+
+        // Class Pill Box
+        roundRectPath(ctx, metaBoxX, cursorY + 4, metaBoxW, 50, 14);
+        ctx.fillStyle = "#F8FAFC";
+        ctx.fill();
+        ctx.strokeStyle = "#E2E8F0";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = "#64748B";
+        ctx.fillText("CLASS", metaBoxX + 16, cursorY + 29);
+
+        ctx.textAlign = "right";
+        ctx.font = '800 19px "Outfit", "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = "#0F172A";
+        let displayClass = activeClass;
+        while (ctx.measureText(displayClass).width > metaBoxW - 86 && displayClass.length > 4) {
+          displayClass = displayClass.slice(0, -1);
+        }
+        ctx.fillText(displayClass, rightBoundX - 16, cursorY + 30);
+
+        // Date Pill Box
+        roundRectPath(ctx, metaBoxX, cursorY + 62, metaBoxW, 50, 14);
+        ctx.fillStyle = "#F0F9FF";
+        ctx.fill();
+        ctx.strokeStyle = "#BAE6FD";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.textAlign = "left";
+        ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = "#0369A1";
+        ctx.fillText("DATE", metaBoxX + 16, cursorY + 87);
+
+        ctx.textAlign = "right";
+        ctx.font = '800 19px "Outfit", "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = "#0284C7";
+        ctx.fillText(formattedDate, rightBoundX - 16, cursorY + 88);
+
+        ctx.textAlign = "left";
+
+        // Subtle divider below header
+        cursorY += 132;
+        ctx.strokeStyle = "#E2E8F0";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sheetX + cardPadX, cursorY);
+        ctx.lineTo(rightBoundX, cursorY);
+        ctx.stroke();
+
+        // 4. Subjects Section Heading
+        cursorY += 24;
+        ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = "#334155";
+        ctx.textBaseline = "middle";
+        ctx.fillText("SUBJECT-WISE HOMEWORK & CLASSWORK", sheetX + cardPadX, cursorY);
+
+        if (hasEntries) {
+          ctx.textAlign = "right";
+          ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = "#64748B";
+          ctx.fillText(
+            `${populatedSubjects.length} Subject${populatedSubjects.length > 1 ? "s" : ""}`,
+            rightBoundX,
+            cursorY
+          );
+          ctx.textAlign = "left";
+        } else if (highlightEmptyWarning) {
+          ctx.textAlign = "right";
+          ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = "#DC2626";
+          ctx.fillText("Tip: Type subject diaries on the left first", rightBoundX, cursorY);
+          ctx.textAlign = "left";
+        }
+
+        cursorY += 18;
+
+        // 5. Render Populated Subject Cards in Landscape 2-Column Grid (Empty subjects omitted)
+        if (!hasEntries) {
+          roundRectPath(ctx, sheetX + cardPadX, cursorY, innerWidth, subjectsBlockHeight, 18);
+          ctx.fillStyle = "#F8FAFC";
+          ctx.fill();
+          ctx.strokeStyle = "#CBD5E1";
+          ctx.setLineDash([8, 6]);
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = '600 19px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = "#64748B";
+          ctx.fillText(
+            "Write diary entries in the subject fields on the left — only filled subjects will appear here.",
+            sheetX + contentWidth / 2,
+            cursorY + subjectsBlockHeight / 2
+          );
+          ctx.textAlign = "left";
+          cursorY += subjectsBlockHeight + rowGap;
+        } else {
+          gridRows.forEach((pair) => {
+            const rowH = pair[0].rowHeight;
+
+            pair.forEach((item, colIdx) => {
+              if (!item) return;
+
+              const itemW = item.isFullWidth ? innerWidth : cardColW;
+              const itemX = sheetX + cardPadX + (colIdx === 1 ? cardColW + colGap : 0);
+
+              roundRectPath(ctx, itemX, cursorY, itemW, rowH, 16);
+              ctx.fillStyle = "#FFFFFF";
+              ctx.fill();
+              ctx.strokeStyle = "#CBD5E1";
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+
+              // Left accent bar inside subject card
+              ctx.save();
+              roundRectPath(ctx, itemX, cursorY, 7, rowH, 16);
+              ctx.fillStyle = item.color;
+              ctx.fill();
+              ctx.restore();
+
+              // Subject Badge Pill
+              const pillLeft = itemX + 16;
+              const pillTop = cursorY + 14;
+              const pillHeight = rowH - 28;
+              roundRectPath(ctx, pillLeft, pillTop, badgeColW, pillHeight, 12);
+              ctx.fillStyle = item.badgeBg;
+              ctx.fill();
+
+              ctx.font = '700 18px "Outfit", "Plus Jakarta Sans", sans-serif';
+              ctx.fillStyle = item.color;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+
+              let subjLabel = item.name.trim() || "Subject";
+              while (ctx.measureText(subjLabel).width > badgeColW - 18 && subjLabel.length > 3) {
+                subjLabel = subjLabel.slice(0, -1);
+              }
+              ctx.fillText(subjLabel, pillLeft + badgeColW / 2, pillTop + pillHeight / 2 + 1);
+
+              // Diary Entry Text
+              const diaryTextX = pillLeft + badgeColW + 18;
+              const diaryTextStartY = cursorY + rowPadY + lineHeight / 2 - 2;
+
+              ctx.textAlign = "left";
+              ctx.textBaseline = "middle";
+              ctx.font = '500 21px "Plus Jakarta Sans", sans-serif';
+              ctx.fillStyle = "#1E293B";
+
+              item.lines.forEach((line, idx) => {
+                ctx.fillText(line, diaryTextX, diaryTextStartY + idx * lineHeight);
+              });
+            });
+
+            cursorY += rowH + rowGap;
+          });
+        }
+
+        // 6. Optional Notice / Remarks Box (No bottom generator watermark)
+        if (noteLines.length > 0) {
+          cursorY += 2;
+          roundRectPath(ctx, sheetX + cardPadX, cursorY, innerWidth, noteBoxHeight, 14);
+          ctx.fillStyle = "#FFFBEB";
+          ctx.fill();
+          ctx.strokeStyle = "#FDE68A";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = '800 12px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = "#B45309";
+          ctx.textBaseline = "top";
+          ctx.fillText("IMPORTANT NOTICE", sheetX + cardPadX + 20, cursorY + 11);
+
+          ctx.font = '600 19px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = "#78350F";
+          noteLines.forEach((line, idx) => {
+            ctx.fillText(line, sheetX + cardPadX + 20, cursorY + 29 + idx * 26);
+          });
+        }
+      }
+
+      /**
+       * Loads the default logo.jpeg from the root directory with graceful fallback
+       * to the built-in emblem if logo.jpeg is unavailable.
+       */
+      function loadDefaultRootLogo() {
+        const defaultImg = new Image();
+        defaultImg.onload = () => {
+          state.customLogoImg = defaultImg;
+          state.logoLabel = "logo.jpeg (Default)";
+          els.logoSourceLabel.textContent = state.logoLabel;
+          refreshLogoCanvases();
+          renderDiaryCanvas();
+        };
+        defaultImg.onerror = () => {
+          state.customLogoImg = null;
+          state.logoLabel = "Default Emblem (logo.jpeg not found)";
+          els.logoSourceLabel.textContent = state.logoLabel;
+          refreshLogoCanvases();
+          renderDiaryCanvas();
+        };
+        defaultImg.src = "logo.jpeg";
+      }
+
+      /**
+       * Binds UI events and initializes application state.
+       */
+      function init() {
+        els.diaryDate.value = state.date;
+        els.diaryClass.value = state.classSelection;
+        els.generalNote.value = state.generalNote;
+
+        refreshLogoCanvases();
+        renderSubjectInputs();
+        renderDiaryCanvas();
+        loadDefaultRootLogo();
+
+        // Date change
+        els.diaryDate.addEventListener("change", (e) => {
+          state.date = e.target.value;
+          renderDiaryCanvas();
+        });
+
+        // Class selection change
+        els.diaryClass.addEventListener("change", (e) => {
+          state.classSelection = e.target.value;
+          if (state.classSelection === "CUSTOM") {
+            els.customClassInput.classList.remove("hidden");
+            els.customClassInput.focus();
+          } else {
+            els.customClassInput.classList.add("hidden");
+          }
+          renderDiaryCanvas();
+        });
+
+        // Custom class text input
+        els.customClassInput.addEventListener("input", (e) => {
+          state.customClass = e.target.value;
+          renderDiaryCanvas();
+        });
+
+        // General notice input
+        els.generalNote.addEventListener("input", (e) => {
+          state.generalNote = e.target.value;
+          renderDiaryCanvas();
+        });
+
+        // Add custom subject row
+        els.btnAddSubject.addEventListener("click", () => {
+          const palette = ACCENT_PALETTE[state.subjects.length % ACCENT_PALETTE.length];
+          const newIndex = state.subjects.length + 1;
+          state.subjects.push({
+            id: `subj-${Date.now()}-${newIndex}`,
+            name: `Subject ${newIndex}`,
+            color: palette.color,
+            badgeBg: palette.badgeBg,
+            diary: "",
+          });
+          renderSubjectInputs();
+          renderDiaryCanvas();
+          showToast(`Added Subject ${newIndex} field.`, "info");
+        });
+
+        // Upload custom campus logo
+        els.logoUploadInput.addEventListener("change", (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              state.customLogoImg = img;
+              state.logoLabel = `Uploaded: ${file.name}`;
+              els.logoSourceLabel.textContent = state.logoLabel;
+              refreshLogoCanvases();
+              renderDiaryCanvas();
+              showToast("Campus logo updated!", "success");
+            };
+            img.onerror = () => {
+              showToast("Unable to read selected image file.", "warn");
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // Reset logo to default campus crest
+        els.btnResetLogo.addEventListener("click", () => {
+          state.customLogoImg = null;
+          els.logoUploadInput.value = "";
+        // Reset logo to default root logo.jpeg
+        els.btnResetLogo.addEventListener("click", () => {
+          els.logoUploadInput.value = "";
+          loadDefaultRootLogo();
+          showToast("Restored default logo.jpeg.", "info");
+        });
+
+        // Create Diary Image button
+        els.btnCreateDiary.addEventListener("click", () => {
+          const hasFilled = state.subjects.some((s) => s.diary.trim().length > 0);
+          renderDiaryCanvas({ highlightEmptyWarning: !hasFilled });
+          els.diaryCanvas.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          if (hasFilled) {
+            showToast("Diary image created! Click 'Download PNG Image' to save.", "success");
+          } else {
+            showToast("Write diary text in at least one subject field first.", "warn");
+          }
+        });
+
+        // Download buttons
+        els.btnDownloadDiary.addEventListener("click", downloadDiaryImage);
+        els.btnDownloadSecondary.addEventListener("click", downloadDiaryImage);
+
+        // Sample & Clear buttons
+        els.btnLoadSample.addEventListener("click", loadSampleDiary);
+        els.btnClearAll.addEventListener("click", clearAllEntries);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
