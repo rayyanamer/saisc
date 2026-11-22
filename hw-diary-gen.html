@@ -60,6 +60,7 @@
   </style>
 </head>
 <body class="workspace-bg min-h-screen text-slate-800 antialiased selection:bg-rose-100 selection:text-rose-900">
+  <!-- Floating status notification banner -->
   <div
     id="statusBanner"
     role="status"
@@ -72,6 +73,7 @@
     </div>
   </div>
 
+  <!-- Top Navigation Bar -->
   <header class="border-b border-slate-200 bg-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
       <div class="flex items-center gap-3">
@@ -83,7 +85,7 @@
             Daily Diary Image Maker
           </h1>
           <p class="text-xs text-slate-500">
-            Create &amp; download class diary cards
+            Create &amp; download large-print class diary cards
           </p>
         </div>
       </div>
@@ -107,11 +109,13 @@
     </div>
   </header>
 
+  <!-- Main Two-Column Workspace -->
   <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+      <!-- Left Column: Form Inputs -->
       <section
         aria-label="Diary Entry Form"
-        class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-6"
+        class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-5"
       >
         <div class="mb-5 flex items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
           <h2 class="font-display text-base font-bold text-slate-900">
@@ -164,6 +168,7 @@
           </div>
         </div>
 
+        <!-- Campus Logo Picker -->
         <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2.5">
           <div class="flex items-center gap-3">
             <div class="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-white">
@@ -195,6 +200,7 @@
           </div>
         </div>
 
+        <!-- Dynamic Subjects Input List -->
         <div class="mb-5">
           <div class="mb-2.5 flex items-center justify-between">
             <h3 class="text-xs font-semibold text-slate-600">
@@ -212,6 +218,7 @@
           <div id="subjectsContainer" class="space-y-3"></div>
         </div>
 
+        <!-- Optional Notice Field -->
         <div class="mb-5">
           <label for="generalNote" class="mb-1.5 block text-xs font-semibold text-slate-600">
             Notice (Optional)
@@ -224,6 +231,7 @@
           />
         </div>
 
+        <!-- Action Buttons -->
         <div class="flex flex-col gap-2.5 sm:flex-row">
           <button
             type="button"
@@ -243,13 +251,14 @@
         </div>
       </section>
 
+      <!-- Right Column: Live High-Resolution Canvas Preview -->
       <section
         aria-label="Generated Diary Preview"
-        class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:sticky lg:top-6 lg:col-span-6"
+        class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:sticky lg:top-6 lg:col-span-7"
       >
         <div class="mb-3.5 flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <h2 class="font-display text-base font-bold text-slate-900">
-            Preview
+            Preview (Large Rows Layout)
           </h2>
           <button
             type="button"
@@ -272,6 +281,7 @@
 
   <script>
     (() => {
+      // Default subjects configuration with distinct high-contrast accent colors
       const DEFAULT_SUBJECTS = [
         { id: "subj-1", name: "Physics", color: "#0284c7", badgeBg: "#e0f2fe", diary: "" },
         { id: "subj-2", name: "Chemistry", color: "#dc2626", badgeBg: "#fee2e2", diary: "" },
@@ -284,6 +294,7 @@
         { id: "subj-9", name: "Tarjuma-tul-Quran", color: "#15803d", badgeBg: "#dcfce7", diary: "" },
       ];
 
+      // Sample diary entries for quick testing
       const SAMPLE_DIARIES = {
         Physics: "Chapter 5: Gravitation — Revise Newton's Law of Universal Gravitation and solve numerical problems 5.1 to 5.4 in notebooks.",
         Chemistry: "Chemical Equilibrium: Learn Law of Mass Action with examples; prepare short questions on reversible reactions for tomorrow's oral test.",
@@ -637,13 +648,18 @@
         return /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
       }
 
+      /**
+       * Renders the Diary Card on a high-resolution 1600px canvas using a
+       * single-column full-width ROWS layout with large, crisp typography.
+       */
       function renderDiaryCanvas(options = {}) {
         const { highlightEmptyWarning = false } = options;
         const canvas = els.diaryCanvas;
         const ctx = canvas.getContext("2d");
 
+        // High-resolution base dimensions
         const width = 1600;
-        const outerMargin = 32;
+        const outerMargin = 28;
         const cardPadX = 36;
         const contentWidth = width - outerMargin * 2;
         const innerWidth = contentWidth - cardPadX * 2;
@@ -653,94 +669,78 @@
 
         const measureCtx = document.createElement("canvas").getContext("2d");
 
-        const colGap = 20;
-        const rowGap = 18;
-        const cardTopPad = 16;
-        const cardBottomPad = 18;
-        const headerStripH = 38;
-        const headerToBodyGap = 12;
-        const cardColW = (innerWidth - colGap) / 2;
+        // Full-width Row Layout metrics (large & super clear)
+        const rowGap = 22;
+        const rowPadX = 28;
+        const rowTopPad = 20;
+        const rowBottomPad = 24;
+        const headerStripH = 48;
+        const ruleGap = 10;
+        const bodyTopGap = 16;
+        const textMaxW = innerWidth - rowPadX * 2;
 
-        const measuredItems = populatedSubjects.map((item, idx) => {
+        // Measure each populated subject as a full-width row
+        const rowItems = populatedSubjects.map((item, idx) => {
           const isRtl = containsRtlScript(item.diary);
-          const lineHeight = isRtl ? 46 : 35;
-          measureCtx.font = isRtl
-            ? '600 27px "Noto Naskh Arabic", serif'
-            : '600 24px "Plus Jakarta Sans", sans-serif';
-          const textMaxW = cardColW - 36;
+          // Large, bold-readable font sizes for both English and Urdu/Arabic
+          const fontSpec = isRtl
+            ? '600 38px "Noto Naskh Arabic", serif'
+            : '600 33px "Plus Jakarta Sans", sans-serif';
+          const lineHeight = isRtl ? 64 : 48;
+
+          measureCtx.font = fontSpec;
           const lines = wrapTextLines(measureCtx, item.diary.trim(), textMaxW);
           const safeLines = lines.length > 0 ? lines : [""];
+
           const rowHeight = Math.max(
-            122,
-            cardTopPad + headerStripH + headerToBodyGap + safeLines.length * lineHeight + cardBottomPad
+            154,
+            rowTopPad + headerStripH + ruleGap + bodyTopGap + safeLines.length * lineHeight + rowBottomPad
           );
+
           return {
             ...item,
             serialNo: String(idx + 1).padStart(2, "0"),
             isRtl,
+            fontSpec,
             lineHeight,
             lines: safeLines,
             rowHeight,
           };
         });
 
-        const gridRows = [];
-        if (measuredItems.length === 1) {
-          const single = measuredItems[0];
-          const lineHeight = single.isRtl ? 46 : 35;
-          measureCtx.font = single.isRtl
-            ? '600 27px "Noto Naskh Arabic", serif'
-            : '600 24px "Plus Jakarta Sans", sans-serif';
-          const fullTextMaxW = innerWidth - 40;
-          const fullLines = wrapTextLines(measureCtx, single.diary.trim(), fullTextMaxW);
-          const safeLines = fullLines.length > 0 ? fullLines : [""];
-          const rowHeight = Math.max(
-            122,
-            cardTopPad + headerStripH + headerToBodyGap + safeLines.length * lineHeight + cardBottomPad
-          );
-          gridRows.push([{ ...single, lineHeight, lines: safeLines, rowHeight, isFullWidth: true }]);
-        } else {
-          for (let i = 0; i < measuredItems.length; i += 2) {
-            const leftItem = measuredItems[i];
-            const rightItem = measuredItems[i + 1] || null;
-            const unifiedHeight = rightItem
-              ? Math.max(leftItem.rowHeight, rightItem.rowHeight)
-              : leftItem.rowHeight;
-            gridRows.push([
-              { ...leftItem, rowHeight: unifiedHeight, isFullWidth: false },
-              rightItem ? { ...rightItem, rowHeight: unifiedHeight, isFullWidth: false } : null,
-            ]);
-          }
-        }
-
         const subjectsBlockHeight = hasEntries
-          ? gridRows.reduce((sum, pair) => sum + pair[0].rowHeight, 0) +
-            Math.max(0, gridRows.length - 1) * rowGap
-          : 120;
+          ? rowItems.reduce((sum, item) => sum + item.rowHeight, 0) +
+            Math.max(0, rowItems.length - 1) * rowGap
+          : 150;
 
+        // General Notice box measurement (large font)
         const noteText = state.generalNote.trim();
         const noteIsRtl = containsRtlScript(noteText);
-        const noteLineH = noteIsRtl ? 42 : 32;
-        measureCtx.font = noteIsRtl
-          ? '600 24px "Noto Naskh Arabic", serif'
-          : '600 22px "Plus Jakarta Sans", sans-serif';
-        const noteLines = noteText ? wrapTextLines(measureCtx, noteText, innerWidth - 44) : [];
-        const noteBoxHeight = noteLines.length > 0 ? 52 + noteLines.length * noteLineH : 0;
+        const noteFontSpec = noteIsRtl
+          ? '600 34px "Noto Naskh Arabic", serif'
+          : '600 30px "Plus Jakarta Sans", sans-serif';
+        const noteLineH = noteIsRtl ? 56 : 44;
+        measureCtx.font = noteFontSpec;
+        const noteLines = noteText ? wrapTextLines(measureCtx, noteText, innerWidth - 52) : [];
+        const noteBoxHeight = noteLines.length > 0 ? 68 + noteLines.length * noteLineH : 0;
 
-        const headerHeight = 192;
-        const sectionTitleHeight = 52;
-        const bottomPad = 36;
+        // Header & Section Title vertical spacing
+        const headerBandH = 224;
+        const sectionTitleHeight = 68;
+        const bottomPad = 40;
+
         const totalHeight =
           outerMargin * 2 +
-          headerHeight +
+          headerBandH +
           sectionTitleHeight +
           subjectsBlockHeight +
-          (noteBoxHeight > 0 ? noteBoxHeight + 18 : 0) +
+          (noteBoxHeight > 0 ? noteBoxHeight + 24 : 0) +
           bottomPad;
 
         canvas.width = width;
         canvas.height = totalHeight;
 
+        // Soft background canvas fill
         const bgGrad = ctx.createLinearGradient(0, 0, width, totalHeight);
         bgGrad.addColorStop(0, "#FDF2F2");
         bgGrad.addColorStop(0.55, "#F8FAFC");
@@ -748,29 +748,30 @@
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, width, totalHeight);
 
+        // Main outer card container
         const sheetX = outerMargin;
         const sheetY = outerMargin;
         const sheetH = totalHeight - outerMargin * 2;
 
         ctx.save();
-        ctx.shadowColor = "rgba(15, 23, 42, 0.06)";
-        ctx.shadowBlur = 28;
-        ctx.shadowOffsetY = 10;
-        roundRectPath(ctx, sheetX, sheetY, contentWidth, sheetH, 24);
+        ctx.shadowColor = "rgba(15, 23, 42, 0.07)";
+        ctx.shadowBlur = 32;
+        ctx.shadowOffsetY = 12;
+        roundRectPath(ctx, sheetX, sheetY, contentWidth, sheetH, 28);
         ctx.fillStyle = "#FFFFFF";
         ctx.fill();
         ctx.restore();
 
-        roundRectPath(ctx, sheetX, sheetY, contentWidth, sheetH, 24);
-        ctx.strokeStyle = "#E2E8F0";
-        ctx.lineWidth = 1.5;
+        roundRectPath(ctx, sheetX, sheetY, contentWidth, sheetH, 28);
+        ctx.strokeStyle = "#CBD5E1";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        const headerBandH = 176;
-        const splitX = sheetX + contentWidth - 440;
+        // Split Header Band (Campus Info Left | Class & Date Right)
+        const splitX = sheetX + contentWidth - 490;
 
         ctx.save();
-        roundRectPath(ctx, sheetX + 1, sheetY + 1, contentWidth - 2, headerBandH, 23);
+        roundRectPath(ctx, sheetX + 1, sheetY + 1, contentWidth - 2, headerBandH, 27);
         ctx.clip();
 
         ctx.fillStyle = "#FFFFFF";
@@ -779,98 +780,103 @@
         ctx.fillStyle = "#FFF1F2";
         ctx.fillRect(splitX, sheetY, contentWidth - (splitX - sheetX), headerBandH);
 
-        ctx.fillStyle = "#FECDD3";
-        ctx.fillRect(splitX - 1.5, sheetY, 1.5, headerBandH);
+        ctx.fillStyle = "#FDA4AF";
+        ctx.fillRect(splitX - 2, sheetY, 2, headerBandH);
         ctx.restore();
 
-        let cursorY = sheetY + 24;
-        const logoSize = 128;
+        // Campus Logo
+        let cursorY = sheetY + 30;
+        const logoSize = 160;
         const logoX = sheetX + cardPadX;
         const logoY = cursorY;
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 3, 0, Math.PI * 2);
+        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 4, 0, Math.PI * 2);
         ctx.fillStyle = "#FFFFFF";
         ctx.fill();
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = "#FECDD3";
         ctx.stroke();
         ctx.restore();
 
         const tempLogoCanvas = document.createElement("canvas");
-        tempLogoCanvas.width = 300;
-        tempLogoCanvas.height = 300;
-        drawCampusLogo(tempLogoCanvas.getContext("2d"), 300, state.customLogoImg);
+        tempLogoCanvas.width = 340;
+        tempLogoCanvas.height = 340;
+        drawCampusLogo(tempLogoCanvas.getContext("2d"), 340, state.customLogoImg);
         ctx.drawImage(tempLogoCanvas, logoX, logoY, logoSize, logoSize);
 
-        const textStartX = logoX + logoSize + 24;
+        // Campus Name & Subtitles (Large & Bold)
+        const textStartX = logoX + logoSize + 28;
 
         ctx.fillStyle = "#E11D48";
-        ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillText("DAILY CLASS DIARY", textStartX, cursorY + 6);
+        ctx.fillText("DAILY CLASS DIARY", textStartX, cursorY + 8);
 
         ctx.fillStyle = "#0F172A";
-        ctx.font = '800 33px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText("Superior Allama Iqbal Science College", textStartX, cursorY + 30);
+        ctx.font = '800 38px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText("Superior Allama Iqbal Science College", textStartX, cursorY + 38);
 
-        ctx.fillStyle = "#475569";
-        ctx.font = '600 19px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText("Gojra Campus  •  Education With Excellence", textStartX, cursorY + 76);
+        ctx.fillStyle = "#334155";
+        ctx.font = '700 23px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText("Gojra Campus  •  Education With Excellence", textStartX, cursorY + 94);
 
+        // Class / Section & Date Panel (Right side of Header)
         const activeClass = getActiveClassName();
         const formattedDate = formatDisplayDate(state.date);
-        const metaLeftX = splitX + 28;
+        const metaLeftX = splitX + 30;
         const metaRightX = sheetX + contentWidth - cardPadX;
 
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
         ctx.fillStyle = "#BE123C";
-        ctx.fillText("CLASS / SECTION", metaLeftX, cursorY + 18);
+        ctx.fillText("CLASS / SECTION", metaLeftX, cursorY + 20);
 
-        ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '800 29px "Plus Jakarta Sans", sans-serif';
         ctx.fillStyle = "#0F172A";
         let displayClass = activeClass;
         while (ctx.measureText(displayClass).width > metaRightX - metaLeftX && displayClass.length > 4) {
           displayClass = displayClass.slice(0, -1);
         }
-        ctx.fillText(displayClass, metaLeftX, cursorY + 46);
+        ctx.fillText(displayClass, metaLeftX, cursorY + 54);
 
         ctx.strokeStyle = "#FECDD3";
-        ctx.lineWidth = 1.25;
+        ctx.lineWidth = 1.75;
         ctx.beginPath();
-        ctx.moveTo(metaLeftX, cursorY + 72);
-        ctx.lineTo(metaRightX, cursorY + 72);
+        ctx.moveTo(metaLeftX, cursorY + 86);
+        ctx.lineTo(metaRightX, cursorY + 86);
         ctx.stroke();
 
-        ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
         ctx.fillStyle = "#BE123C";
-        ctx.fillText("PRESENT DATE", metaLeftX, cursorY + 92);
+        ctx.fillText("PRESENT DATE", metaLeftX, cursorY + 112);
 
-        ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '800 27px "Plus Jakarta Sans", sans-serif';
         ctx.fillStyle = "#0F172A";
-        ctx.fillText(formattedDate, metaLeftX, cursorY + 119);
+        ctx.fillText(formattedDate, metaLeftX, cursorY + 146);
 
+        // Header Bottom Border
         cursorY = sheetY + headerBandH + 1;
-        ctx.strokeStyle = "#E2E8F0";
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "#CBD5E1";
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(sheetX + 1, cursorY);
         ctx.lineTo(sheetX + contentWidth - 1, cursorY);
         ctx.stroke();
 
-        cursorY += 26;
-        ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
+        // Section Heading Bar
+        cursorY += 34;
+        ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
         ctx.fillStyle = "#0F172A";
         ctx.textBaseline = "middle";
-        ctx.fillText("Subject Diary", sheetX + cardPadX, cursorY);
+        ctx.fillText("Subject-Wise Homework & Classwork", sheetX + cardPadX, cursorY);
 
         if (hasEntries) {
           ctx.textAlign = "right";
-          ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+          ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
           ctx.fillStyle = "#475569";
           ctx.fillText(
             `${populatedSubjects.length} SUBJECT${populatedSubjects.length > 1 ? "S" : ""}`,
@@ -880,27 +886,28 @@
           ctx.textAlign = "left";
         } else if (highlightEmptyWarning) {
           ctx.textAlign = "right";
-          ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+          ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
           ctx.fillStyle = "#E11D48";
           ctx.fillText("Enter diary text in at least one subject", metaRightX, cursorY);
           ctx.textAlign = "left";
         }
 
-        cursorY += 18;
+        cursorY += 26;
 
+        // Render Subject Rows (1 Full-Width Row per Subject)
         if (!hasEntries) {
-          roundRectPath(ctx, sheetX + cardPadX, cursorY, innerWidth, subjectsBlockHeight, 16);
+          roundRectPath(ctx, sheetX + cardPadX, cursorY, innerWidth, subjectsBlockHeight, 20);
           ctx.fillStyle = "#F8FAFC";
           ctx.fill();
-          ctx.strokeStyle = "#CBD5E1";
-          ctx.setLineDash([7, 6]);
-          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "#94A3B8";
+          ctx.setLineDash([8, 8]);
+          ctx.lineWidth = 2;
           ctx.stroke();
           ctx.setLineDash([]);
 
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+          ctx.font = '700 25px "Plus Jakarta Sans", sans-serif';
           ctx.fillStyle = "#475569";
           ctx.fillText(
             "Empty subjects are hidden automatically. Write a subject diary on the left to display it.",
@@ -910,107 +917,116 @@
           ctx.textAlign = "left";
           cursorY += subjectsBlockHeight + rowGap;
         } else {
-          gridRows.forEach((pair) => {
-            const rowH = pair[0].rowHeight;
+          rowItems.forEach((item) => {
+            const itemX = sheetX + cardPadX;
+            const itemW = innerWidth;
+            const rowH = item.rowHeight;
 
-            pair.forEach((item, colIdx) => {
-              if (!item) return;
+            // Row card container
+            roundRectPath(ctx, itemX, cursorY, itemW, rowH, 20);
+            ctx.fillStyle = "#F8FAFC";
+            ctx.fill();
+            ctx.strokeStyle = "#CBD5E1";
+            ctx.lineWidth = 1.75;
+            ctx.stroke();
 
-              const itemW = item.isFullWidth ? innerWidth : cardColW;
-              const itemX = sheetX + cardPadX + (colIdx === 1 ? cardColW + colGap : 0);
+            // Left colored accent bar inside the row for strong visual separation
+            ctx.save();
+            roundRectPath(ctx, itemX, cursorY, itemW, rowH, 20);
+            ctx.clip();
+            ctx.fillStyle = item.color;
+            ctx.fillRect(itemX, cursorY, 10, rowH);
+            ctx.restore();
 
-              roundRectPath(ctx, itemX, cursorY, itemW, rowH, 16);
-              ctx.fillStyle = "#F8FAFC";
-              ctx.fill();
-              ctx.strokeStyle = "#CBD5E1";
-              ctx.lineWidth = 1.35;
-              ctx.stroke();
+            // Row Header Strip (Number Badge + Large Subject Title + Accent Dot)
+            const stripY = cursorY + rowTopPad;
+            const stripX = itemX + rowPadX;
+            const stripW = itemW - rowPadX * 2;
 
-              const stripY = cursorY + cardTopPad;
-              const stripX = itemX + 18;
-              const stripW = itemW - 36;
+            const badgeW = 54;
+            roundRectPath(ctx, stripX, stripY, badgeW, headerStripH, 12);
+            ctx.fillStyle = item.badgeBg;
+            ctx.fill();
 
-              const badgeW = 42;
-              roundRectPath(ctx, stripX, stripY, badgeW, headerStripH, 9);
-              ctx.fillStyle = item.badgeBg;
-              ctx.fill();
+            ctx.font = '800 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = item.color;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(item.serialNo, stripX + badgeW / 2, stripY + headerStripH / 2);
 
-              ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
-              ctx.fillStyle = item.color;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(item.serialNo, stripX + badgeW / 2, stripY + headerStripH / 2);
+            ctx.textAlign = "left";
+            ctx.font = '800 29px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = "#0F172A";
+            ctx.fillText(
+              item.name.trim() || "Subject",
+              stripX + badgeW + 16,
+              stripY + headerStripH / 2 + 1
+            );
 
+            ctx.beginPath();
+            ctx.arc(stripX + stripW - 10, stripY + headerStripH / 2, 8, 0, Math.PI * 2);
+            ctx.fillStyle = item.color;
+            ctx.fill();
+
+            // Horizontal divider between Subject Title and Homework Text
+            const ruleY = stripY + headerStripH + ruleGap;
+            ctx.strokeStyle = "#E2E8F0";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(stripX, ruleY);
+            ctx.lineTo(stripX + stripW, ruleY);
+            ctx.stroke();
+
+            // Large Homework / Classwork Body Text
+            const bodyStartY = ruleY + bodyTopGap;
+            ctx.textBaseline = "top";
+            ctx.font = item.fontSpec;
+            ctx.fillStyle = "#0F172A";
+
+            if (item.isRtl) {
+              ctx.textAlign = "right";
+              const rtlRightX = stripX + stripW;
+              item.lines.forEach((line, idx) => {
+                ctx.fillText(line, rtlRightX, bodyStartY + idx * item.lineHeight);
+              });
+            } else {
               ctx.textAlign = "left";
-              ctx.font = '800 21px "Plus Jakarta Sans", sans-serif';
-              ctx.fillStyle = "#0F172A";
-              ctx.fillText(item.name.trim() || "Subject", stripX + badgeW + 12, stripY + headerStripH / 2 + 0.5);
-
-              ctx.beginPath();
-              ctx.arc(stripX + stripW - 7, stripY + headerStripH / 2, 5.5, 0, Math.PI * 2);
-              ctx.fillStyle = item.color;
-              ctx.fill();
-
-              const ruleY = stripY + headerStripH + 6;
-              ctx.strokeStyle = "#E2E8F0";
-              ctx.lineWidth = 1.2;
-              ctx.beginPath();
-              ctx.moveTo(stripX, ruleY);
-              ctx.lineTo(stripX + stripW, ruleY);
-              ctx.stroke();
-
-              const bodyStartY = ruleY + 12;
-              ctx.textBaseline = "top";
-              if (item.isRtl) {
-                ctx.textAlign = "right";
-                ctx.font = '600 27px "Noto Naskh Arabic", serif';
-                ctx.fillStyle = "#0F172A";
-                const rtlRightX = stripX + stripW;
-                item.lines.forEach((line, idx) => {
-                  ctx.fillText(line, rtlRightX, bodyStartY + idx * item.lineHeight);
-                });
-              } else {
-                ctx.textAlign = "left";
-                ctx.font = '600 24px "Plus Jakarta Sans", sans-serif';
-                ctx.fillStyle = "#0F172A";
-                item.lines.forEach((line, idx) => {
-                  ctx.fillText(line, stripX, bodyStartY + idx * item.lineHeight);
-                });
-              }
-              ctx.textAlign = "left";
-            });
+              item.lines.forEach((line, idx) => {
+                ctx.fillText(line, stripX, bodyStartY + idx * item.lineHeight);
+              });
+            }
+            ctx.textAlign = "left";
 
             cursorY += rowH + rowGap;
           });
         }
 
+        // Optional Notice Banner at Bottom (Large Font)
         if (noteLines.length > 0) {
-          cursorY += 2;
-          roundRectPath(ctx, sheetX + cardPadX, cursorY, innerWidth, noteBoxHeight, 14);
+          cursorY += 4;
+          roundRectPath(ctx, sheetX + cardPadX, cursorY, innerWidth, noteBoxHeight, 18);
           ctx.fillStyle = "#FFF1F2";
           ctx.fill();
-          ctx.strokeStyle = "#FECDD3";
-          ctx.lineWidth = 1.35;
+          ctx.strokeStyle = "#FDA4AF";
+          ctx.lineWidth = 1.75;
           ctx.stroke();
 
-          ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+          ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
           ctx.fillStyle = "#BE123C";
           ctx.textBaseline = "top";
-          ctx.fillText("NOTICE", sheetX + cardPadX + 22, cursorY + 14);
+          ctx.fillText("IMPORTANT NOTICE", sheetX + cardPadX + 26, cursorY + 18);
 
-          ctx.font = noteIsRtl
-            ? '600 24px "Noto Naskh Arabic", serif'
-            : '600 22px "Plus Jakarta Sans", sans-serif';
+          ctx.font = noteFontSpec;
           ctx.fillStyle = "#881337";
           if (noteIsRtl) {
             ctx.textAlign = "right";
             noteLines.forEach((line, idx) => {
-              ctx.fillText(line, metaRightX - 22, cursorY + 36 + idx * noteLineH);
+              ctx.fillText(line, metaRightX - 26, cursorY + 48 + idx * noteLineH);
             });
             ctx.textAlign = "left";
           } else {
             noteLines.forEach((line, idx) => {
-              ctx.fillText(line, sheetX + cardPadX + 22, cursorY + 36 + idx * noteLineH);
+              ctx.fillText(line, sheetX + cardPadX + 26, cursorY + 48 + idx * noteLineH);
             });
           }
         }
